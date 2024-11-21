@@ -1,0 +1,123 @@
+﻿@model gamesssss.Models.Game
+
+<div class="card border-success rounded-4 ml-5 overflow-hidden">
+    <div class="card-body p-0">
+        <div class="row">
+            <div class="col-md-8 px-5 py-4 flex-md-column justify-content-between">
+                <div>
+                    <h1 class="text-success fw-bolder">@Model.Name</h1>
+                    <span class="badge bg-info fs-5 mb-4">@Model.Category?.Name</span>
+                    <p class="fs-5">@Model.Description</p>
+
+                    <!-- Display the Average Rating -->
+                    <h3>Average Rating: @Model.AverageRating / 5</h3>
+                    <div id="averageRating">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <span class="star @((Model.AverageRating >= i) ? "filled" : "")" data-value="@i">&#9733;</span>
+                        }
+                    </div>
+                </div>
+
+                <!-- User Rating and Comment Section -->
+                <h4>Your Rating:</h4>
+                <div id="userRating">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        <span class="star" data-value="@i" onclick="setUserRating(@i)">&#9733;</span>
+                    }
+                </div>
+
+                <div class="mt-3">
+                    <label for="userComment">Add a Comment:</label>
+                    <textarea id="userComment" class="form-control" placeholder="Share your thoughts..."></textarea>
+                </div>
+                <button class="btn btn-primary mt-2" onclick="submitRating()">Submit Rating</button>
+
+                <!-- Reviews List -->
+                <h3 class="mt-4">Reviews</h3>
+                @if (Model.Reviews.Any())
+                {
+                    foreach (var review in Model.Reviews)
+                    {
+                        <div class="review mt-3">
+                            <strong>@review.User.UserName</strong> - @review.Rating / 5
+                            <p>@review.Comment</p>
+                            <small>@review.DateCreated.ToString("MM/dd/yyyy")</small>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p>No reviews yet. Be the first to rate and review!</p>
+                }
+            </div>
+
+            <!-- Game Cover Image -->
+            <div class="col-md-4">
+                <img src="@($"{FileSettings.ImgsPath}/{Model.Cover}")" alt="@Model.Name" class="w-100"/>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let selectedRating = 0;
+
+        // Set the user's rating based on the selected star
+        function setUserRating(rating) {
+            selectedRating = rating;
+            document.querySelectorAll('#userRating .star').forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add("filled");
+                } else {
+                    star.classList.remove("filled");
+                }
+            });
+        }
+
+        function submitRating() {
+            const comment = document.getElementById("userComment").value.trim();
+
+            if (selectedRating === 0) {
+                alert("Please select a rating.");
+                return;
+            }
+
+            if (comment === "") {
+                alert("Please enter a comment.");
+                return;
+            }
+
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("SubmitRating", "Games")",
+                contentType: "application/json", // Ensure content type is JSON
+                data: JSON.stringify({
+                    gameId: @Model.Id,
+                    rating: selectedRating,
+                    comment: comment
+                }),
+                success: function (result) {
+                    if (result.success) {
+                        alert("Thank you for your rating!");
+                        location.reload(); // Reload the page to update the average rating and reviews
+                    } else {
+                        alert(result.message || "You need to log in to rate.");
+                    }
+                },
+                error: function () {
+                    alert("An error occurred. Please try again.");
+                }
+            });
+        }
+
+        // Attach the setUserRating function to each star click
+        document.querySelectorAll('#userRating .star').forEach((star, index) => {
+            star.addEventListener('click', function () {
+                setUserRating(index + 1);
+            });
+        });
+    </script>
+}

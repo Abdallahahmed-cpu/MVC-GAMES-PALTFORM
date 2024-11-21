@@ -1,0 +1,28 @@
+﻿@model IEnumerable<gamesssss.Models.Review>
+
+<h3>Reviews</h3>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Reviewer</th>
+            <th>Rating</th>
+            <th>Comment</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var review in Model)
+        {
+            <tr>
+                <td>@review.User.UserName</td>
+                <td>@review.Rating/5</td>
+                <td>@review.Comment</td>
+                <td>@review.DateCreated.ToString("MM/dd/yyyy")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Optionally, Add a Review Button -->
+<a href="@Url.Action("Create", "Review", new { gameId = Model.FirstOrDefault()?.GameId })" class="btn btn-secondary">Add a Review</a>

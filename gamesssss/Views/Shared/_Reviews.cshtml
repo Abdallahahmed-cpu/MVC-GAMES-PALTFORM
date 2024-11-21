@@ -1,0 +1,12 @@
+﻿@model IEnumerable<gamesssss.Models.Review>
+
+<div class="reviews">
+    @foreach (var review in Model)
+    {
+        <div class="review">
+            <strong>@review.User.UserName</strong> - @review.Rating/5
+            <p>@review.Comment</p>
+            <small>@review.DateCreated</small>
+        </div>
+    }
+</div>
